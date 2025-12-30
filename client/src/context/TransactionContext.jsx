@@ -5,8 +5,10 @@ import { contractABI, contractAddress } from "../utils/constants";
 
 export const TransactionContext = React.createContext();
 
+// Access to the Ethereum Window Object;
 const { ethereum } = window;
 
+// Function to  create and get Ethereum Contract
 const createEthereumContract = () => {
   const provider = new ethers.providers.Web3Provider(ethereum);
   const signer = provider.getSigner();
@@ -15,15 +17,20 @@ const createEthereumContract = () => {
   return transactionsContract;
 };
 
+
+// 
 export const TransactionsProvider = ({ children }) => {
-  const [formData, setformData] = useState({ addressTo: "", amount: "", keyword: "", message: "" });
+  const [formData, setFormData] = useState({ addressTo: "", amount: "", keyword: "", message: "" });
   const [currentAccount, setCurrentAccount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  // Once we get the transaction count from the smart contract, we store it in the state useState(localStorage.getItem('transactionCount'))
   const [transactionCount, setTransactionCount] = useState(localStorage.getItem("transactionCount"));
   const [transactions, setTransactions] = useState([]);
 
+  // handleChange function to update the transaction object
   const handleChange = (e, name) => {
-    setformData((prevState) => ({ ...prevState, [name]: e.target.value }));
+    // Provide a call-back function to get the previous state and update dynamically the name only the specific field (object)
+    setFormData((prevState) => ({ ...prevState, [name]: e.target.value }));
   };
 
   const getAllTransactions = async () => {
@@ -53,6 +60,7 @@ export const TransactionsProvider = ({ children }) => {
     }
   };
 
+  // Function to check if a wallet is connected
   const checkIfWalletIsConnect = async () => {
     try {
       if (!ethereum) return alert("Please install MetaMask.");
@@ -60,6 +68,7 @@ export const TransactionsProvider = ({ children }) => {
       const accounts = await ethereum.request({ method: "eth_accounts" });
 
       if (accounts.length) {
+        // At the start of every single render, get access to our account
         setCurrentAccount(accounts[0]);
 
         getAllTransactions();
@@ -68,6 +77,8 @@ export const TransactionsProvider = ({ children }) => {
       }
     } catch (error) {
       console.log(error);
+
+      throw new Error("No ethereum object");
     }
   };
 
@@ -86,6 +97,7 @@ export const TransactionsProvider = ({ children }) => {
     }
   };
 
+  // Function to connect a wallet
   const connectWallet = async () => {
     try {
       if (!ethereum) return alert("Please install MetaMask.");
@@ -101,11 +113,13 @@ export const TransactionsProvider = ({ children }) => {
     }
   };
 
+  // 
   const sendTransaction = async () => {
     try {
       if (ethereum) {
         const { addressTo, amount, keyword, message } = formData;
         const transactionsContract = createEthereumContract();
+        // Convert amount to hexadecimal value
         const parsedAmount = ethers.utils.parseEther(amount);
 
         await ethereum.request({
@@ -113,21 +127,26 @@ export const TransactionsProvider = ({ children }) => {
           params: [{
             from: currentAccount,
             to: addressTo,
-            gas: "0x5208",
-            value: parsedAmount._hex,
+            // Gwei -> sub-unit of etrher: 21000 Gwei is equal to 0.000021 Ether that is the standard gas limit for ETH transfer -> gas: "0x5208" in hexadecimal value; 
+            gas: "0x5208", // 21000 Gwei
+            value: parsedAmount._hex, // 0.0001 ETH -> in hexadecimal value
           }],
         });
 
+        // Asynchronous action to Store the transaction in the blockchain
         const transactionHash = await transactionsContract.addToBlockchain(addressTo, parsedAmount, message, keyword);
 
         setIsLoading(true);
         console.log(`Loading - ${transactionHash.hash}`);
+        // Wait the transaction to be finished
         await transactionHash.wait();
-        console.log(`Success - ${transactionHash.hash}`);
+        // Then set the loading to be false
         setIsLoading(false);
+        console.log(`Success - ${transactionHash.hash}`);
 
         const transactionsCount = await transactionsContract.getTransactionCount();
 
+        // Update the transaction count state 
         setTransactionCount(transactionsCount.toNumber());
         window.location.reload();
       } else {
@@ -152,10 +171,11 @@ export const TransactionsProvider = ({ children }) => {
         connectWallet,
         transactions,
         currentAccount,
-        isLoading,
-        sendTransaction,
-        handleChange,
         formData,
+        setFormData,
+        sendTransaction,   
+        handleChange,
+        isLoading
       }}
     >
       {children}

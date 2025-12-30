@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 const APIKEY = import.meta.env.VITE_GIPHY_API;
 
+// Custom Hook
 const useFetch = ({ keyword }) => {
   const [gifUrl, setGifUrl] = useState("");
 

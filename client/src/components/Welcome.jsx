@@ -21,13 +21,15 @@ const Input = ({ placeholder, name, type, value, handleChange }) => (
 );
 
 const Welcome = () => {
-  const { currentAccount, connectWallet, handleChange, sendTransaction, formData, isLoading } = useContext(TransactionContext);
+  const { currentAccount, connectWallet, handleChange, sendTransaction, formData, setFormData, isLoading } = useContext(TransactionContext);
 
   const handleSubmit = (e) => {
+    // Destructured all the properties from formData
     const { addressTo, amount, keyword, message } = formData;
-
+    // Prevent the default behavior (reloading of the page) of the form when submitted
     e.preventDefault();
 
+    // Check if the user has fits in the fields -> Leave the function and not submit anything -> return nothing
     if (!addressTo || !amount || !keyword || !message) return;
 
     sendTransaction();
@@ -43,6 +45,7 @@ const Welcome = () => {
           <p className="text-left mt-5 text-white font-light md:w-9/12 w-11/12 text-base">
             Explore the crypto world. Buy and sell cryptocurrencies easily on Krypto.
           </p>
+          {/* Connect Wallet Button hide when there is a current account: !currentAccount && (<button></button>) */}
           {!currentAccount && (
             <button
               type="button"

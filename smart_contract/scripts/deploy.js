@@ -5,16 +5,16 @@ const main = async () => {
 
   await transactionsContract.deployed();
 
-  console.log("Transactions address: ", transactionsContract.address);
+  console.log("Transactions deployed to this address: ", transactionsContract.address);
 };
 
 const runMain = async () => {
   try {
     await main();
-    process.exit(0);
+    process.exit(0);// Means there is no error
   } catch (error) {
     console.error(error);
-    process.exit(1);
+    process.exit(1);// Means there is an error
   }
 };
 
