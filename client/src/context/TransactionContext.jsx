@@ -17,8 +17,6 @@ const createEthereumContract = () => {
   return transactionsContract;
 };
 
-
-// 
 export const TransactionsProvider = ({ children }) => {
   const [formData, setFormData] = useState({ addressTo: "", amount: "", keyword: "", message: "" });
   const [currentAccount, setCurrentAccount] = useState("");
@@ -46,6 +44,7 @@ export const TransactionsProvider = ({ children }) => {
           timestamp: new Date(transaction.timestamp.toNumber() * 1000).toLocaleString(),
           message: transaction.message,
           keyword: transaction.keyword,
+          // Gives us the real ethereum amount
           amount: parseInt(transaction.amount._hex) / (10 ** 18)
         }));
 
@@ -85,7 +84,9 @@ export const TransactionsProvider = ({ children }) => {
   const checkIfTransactionsExists = async () => {
     try {
       if (ethereum) {
+        // Get the transactions contracts
         const transactionsContract = createEthereumContract();
+        // Get the transaction count (number of transactions)
         const currentTransactionCount = await transactionsContract.getTransactionCount();
 
         window.localStorage.setItem("transactionCount", currentTransactionCount);
@@ -113,7 +114,6 @@ export const TransactionsProvider = ({ children }) => {
     }
   };
 
-  // 
   const sendTransaction = async () => {
     try {
       if (ethereum) {
@@ -146,7 +146,7 @@ export const TransactionsProvider = ({ children }) => {
 
         const transactionsCount = await transactionsContract.getTransactionCount();
 
-        // Update the transaction count state 
+        // Update the transaction count state
         setTransactionCount(transactionsCount.toNumber());
         window.location.reload();
       } else {
@@ -169,12 +169,12 @@ export const TransactionsProvider = ({ children }) => {
       value={{
         transactionCount,
         connectWallet,
-        transactions,
         currentAccount,
         formData,
         setFormData,
-        sendTransaction,   
         handleChange,
+        sendTransaction,   
+        transactions,
         isLoading
       }}
     >
